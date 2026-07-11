@@ -1,8 +1,8 @@
 id: gongxun_cv
-name: Gongxun CV
-version: 1.0.0
+name: Gongxun
+version: 1.0.1
 author: LuoXue
 icon: ''
 desc: vision module
 files:
-  - 88.py
+  - maixcam.py

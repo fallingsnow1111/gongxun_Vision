@@ -1,2 +1,2 @@
-287487为色环识别
-287477为物料识别
+test_material: material model
+test_ring: ring model

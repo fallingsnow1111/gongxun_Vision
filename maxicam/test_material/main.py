@@ -15,9 +15,9 @@ def encode_objs(objs):
         body += struct.pack("<hhHHHf", obj.x, obj.y, obj.w, obj.h, obj.class_id, obj.score)
     return body
 
-model_path = "model_287477.mud"
+model_path = "test_material.mud"
 if not os.path.exists(model_path):
-    model_path = "/root/models/maixhub/287477/model_287477.mud"
+    model_path = "/root/models/maixhub/test_material/test_material.mud"
 detector = nn.YOLOv5(model=model_path)
 
 cam = camera.Camera(detector.input_width(), detector.input_height(), detector.input_format())
@@ -40,4 +40,3 @@ while not app.need_exit():
         msg = f'{detector.labels[obj.class_id]}: {obj.score:.2f}'
         img.draw_string(obj.x, obj.y, msg, color = image.COLOR_RED)
     dis.show(img)
-
