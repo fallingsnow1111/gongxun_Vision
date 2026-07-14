@@ -74,6 +74,8 @@ MODE_NAMES = {
 
 TARGET_NAMES = ["RED", "GREEN", "BLUE"]
 TARGET_COLORS = [image.COLOR_RED, image.COLOR_GREEN, image.COLOR_BLUE]
+MATERIAL_CLASS_MAP = {1: 3, 2: 2, 3: 1}
+RING_CLASS_MAP = {1: 2, 2: 1, 3: 3}
 
 FRAME_HEADER = 0x55
 FRAME_MULTI_TARGET = 0x5B
@@ -124,14 +126,14 @@ else:
 # =========================
 ring_detector = None
 try:
-    ring_detector = nn.YOLOv5(model="/root/models/maixhub/test_ring/test_ring.mud")
+    ring_detector = nn.YOLOv5(model="/root/models/maixhub/best_ring/model_290874.mud")
     print("Ring model loaded: {}x{}".format(ring_detector.input_width(), ring_detector.input_height()))
 except Exception as e:
     print("Ring model load failed: {}".format(e))
 
 material_detector = None
 try:
-    material_detector = nn.YOLOv5(model="/root/models/maixhub/test_material/test_material.mud")
+    material_detector = nn.YOLOv5(model="/root/models/maixhub/new_material/model_290803.mud")
     print("Material model loaded: {}x{}".format(material_detector.input_width(), material_detector.input_height()))
 except Exception as e:
     print("Material model load failed: {}".format(e))
@@ -190,6 +192,12 @@ def reset_target_filters():
             filters[cls] = new_target_filter()
 
 
+def targets_at_same_position(a, b):
+    limit_x = max(a["w"], b["w"]) * 0.6
+    limit_y = max(a["h"], b["h"]) * 0.6
+    return abs(a["cx"] - b["cx"]) <= limit_x and abs(a["cy"] - b["cy"]) <= limit_y
+
+
 def filter_targets(targets, filters):
     detected_by_cls = {target["cls"]: target for target in targets}
     filtered_targets = []
@@ -224,6 +232,16 @@ def filter_targets(targets, filters):
             state["last_target"] = target.copy()
             filtered_targets.append(target)
         elif state["valid"]:
+            color_replaced = any(
+                current["cls"] != cls and targets_at_same_position(current, state["last_target"])
+                for current in targets
+            )
+            if color_replaced:
+                state["valid"] = False
+                state["miss"] = 0
+                state["last_target"] = None
+                continue
+
             state["miss"] += 1
             if state["miss"] < FILTER_MISS_LIMIT:
                 filtered_targets.append(state["last_target"].copy())
@@ -237,7 +255,7 @@ def filter_targets(targets, filters):
 # =========================
 # Detection and drawing
 # =========================
-def detect_three_targets(img, model, roi):
+def detect_three_targets(img, model, roi, class_map=None):
     if model is None:
         return []
 
@@ -251,7 +269,8 @@ def detect_three_targets(img, model, roi):
     best_by_cls = {}
 
     for obj in objs:
-        cls = int(obj.class_id) + 1
+        raw_cls = int(obj.class_id) + 1
+        cls = class_map.get(raw_cls, raw_cls) if class_map else raw_cls
         if cls < 1 or cls > 3:
             continue
 
@@ -379,7 +398,10 @@ while not app.need_exit():
         time.sleep_ms(1)
         continue
 
-    targets = detect_three_targets(img, model, roi)
+    if mode_command == MODE_MATERIAL:
+        targets = detect_three_targets(img, model, roi, MATERIAL_CLASS_MAP)
+    else:
+        targets = detect_three_targets(img, model, roi, RING_CLASS_MAP)
     if mode_command == MODE_RING:
         serial_targets = filter_targets(targets, ring_filters)
     else:
