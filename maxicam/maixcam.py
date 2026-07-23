@@ -74,7 +74,7 @@ MODE_NAMES = {
 
 TARGET_NAMES = ["RED", "GREEN", "BLUE"]
 TARGET_COLORS = [image.COLOR_RED, image.COLOR_GREEN, image.COLOR_BLUE]
-MATERIAL_CLASS_MAP = {1: 3, 2: 2, 3: 1}
+MATERIAL_CLASS_MAP = {1: 1, 2: 3, 3: 2}
 RING_CLASS_MAP = {1: 2, 2: 1, 3: 3}
 
 FRAME_HEADER = 0x55
@@ -126,14 +126,14 @@ else:
 # =========================
 ring_detector = None
 try:
-    ring_detector = nn.YOLOv5(model="/root/models/maixhub/best_ring/model_290874.mud")
+    ring_detector = nn.YOLOv5(model="/root/models/maixhub/Champion_ring2/model_293138.mud")
     print("Ring model loaded: {}x{}".format(ring_detector.input_width(), ring_detector.input_height()))
 except Exception as e:
     print("Ring model load failed: {}".format(e))
 
 material_detector = None
 try:
-    material_detector = nn.YOLOv5(model="/root/models/maixhub/new_material/model_290803.mud")
+    material_detector = nn.YOLOv5(model="/root/models/maixhub/Champion_material2/model_293122.mud")
     print("Material model loaded: {}x{}".format(material_detector.input_width(), material_detector.input_height()))
 except Exception as e:
     print("Material model load failed: {}".format(e))
@@ -359,7 +359,7 @@ def show_targets(img, roi, targets, mode_name):
 # =========================
 # Main loop
 # =========================
-mode_command = MODE_MATERIAL
+mode_command = MODE_RING
 last_mode = None
 frame_id = 0
 fps_count = 0

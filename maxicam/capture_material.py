@@ -5,9 +5,9 @@ import os
 IMG_W = 640
 IMG_H = 480
 CAM_FPS = 30
-SAVE_DIR = "/root/ring_photos"
-NAME_PREFIX = "ring"
-START_INDEX = 366
+SAVE_DIR = "/root/val"
+NAME_PREFIX = "real"
+START_INDEX = 257
 JPEG_QUALITY = 95
 SHOW_SAVE_MS = 1000
 
